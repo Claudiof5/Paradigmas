@@ -57,7 +57,7 @@ subsequencia([],_).
 subsequencia( L1, [H2|T2]) :- prefixo(L1, [H2|T2]), !.
 subsequencia( L1, [_|T2]) :- subsequencia(L1, T2), !.
 
-mescle([],[]).
+mescle([],[], []).
 mescle( L1, [], L1).
 mescle( [], L2, L2).
 mescle([H1|T1],[H2|T2], [H1|R]) :- H1 < H2, mescle(T1, [H2|T2], R).
@@ -106,3 +106,11 @@ mergesortV3( L, R, FC, CH) :-
     mergesortV3(L1, R1, FC, CH),    
     mergesortV3(L2, R2, FC, CH),
     mescleV3(R1,R2,R, FC, CH).
+
+
+
+profundidade1([H|T], MAX, AT, R) :- is_list(H), AT2 is AT + 1, profundidade1(H, MAX, AT2, R1), MAX => R1, profundidade1(T, MAX, AT, R), !.
+profundidade1([H|T], MAX, AT, R) :- is_list(H), AT2 is AT + 1, profundidade1(H, MAX, AT2, _), profundidade1(T, MAX, AT, R), !.
+profundidade1( [X], MAX, _, MAX) :- !.
+profundidade1([_|T], MAX, AT, R) :- AT => MAX, profundidade1(T, AT, AT, R), !.
+profundidade1([_|T], MAX, AT, R) :- profundidade1(T, MAX, AT, R), !.
