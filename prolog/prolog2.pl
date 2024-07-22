@@ -80,59 +80,77 @@ mescleLL([X,Y|T], R1) :- mescle(X,Y,R2), mescleLL([R2|T],R1), !.
 decodifica( [], []) :- !.
 decodifica( [[0,_]|T], R) :- decodifica( T, R), !.
 decodifica( [[N,C]|T], [C|R]) :- N1 is N-1, decodifica( [[N1, C]|T], R), !.
+%---------------------------------------------------------------------------------------------------------
 
-profundidade([], 1) :- !.
+sumarize(L, L1, L2) :-
+    return_set(L, S), count_set( S, L, L2), reverse_list(S, L1), !.
 
-profundidade([H|T], N) :-
-    is_list(H),
-    profundidade(H, NH),
-    profundidade(T, NT), 
-    N is max(NH + 1, NT), 
-    !.
-profundidade([_|T], N) :-
-    profundidade(T, N),
-    !.  
-profundidade([_], 1) :- !.
 
-oculte( _, [], []) :- !.
-oculte( X, [H|T], [xxxx|R]) :- X == H, oculte(X, T, R), !.
-oculte( X, [H|T], [H|R]) :- oculte(X, T, R), !.
+return_set( L, S) :- return_set1( L, [], S), !.
 
-oculteConj( [], L, L ) :- !.
-oculteConj( [H|T], L, R1) :- oculte(H, L, R2),  oculteConj(T, R2, R1), !.
+return_set1([], S, S) :-!.
+return_set1([X|T], Acc, R) :- member(X, Acc), return_set1(T, Acc, R), !.
+return_set1([X|T], Acc, R) :- return_set1(T, [X|Acc], R), !.
 
-intercala( X, _, 1, [X]) :- !.
-intercala( X, Y, N, [X|R]) :- N1 is N-1, intercala(Y,X,N1,R), !.
-juntar([], L, L).
-juntar([X|L1], L2, [X|L3]) :- juntar(L2, L1, L3).
 
-divide(L, 0, [], L).
-divide([X|L], N, [X|L1], L2) :-
-    M is N-1,
-    divide(L, M, L1, L2).
+count_set( S, L, R) :- count_set1( S, L, [], R), !.
+count_set1( [], _, R, R ) :- !.
+count_set1( [X|T], L , Acc, R) :- count_element(X, L, Xcount), count_set1(T, L, [Xcount|Acc], R), !.
 
-separa([X], [X], []).
-separa([X|L], [X,X|L1], L2) :- separa(L, [X|L1], L2).
-separa([X|L], L1, [X|L2]) :- separa(L, L1, L2).
-empacote([], []).
-empacote(L, [LS|LL]) :-
-    separa(L, LS, LR),
-    empacote(LR, LL).
+count_element( X, L, R) :- count_element1(X, L, 0, R), !.
+count_element1( _, [], R, R) :- !.
+count_element1( X, [X|T], Acc, R) :- Acc2 is Acc + 1, count_element1(X, T, Acc2, R), !.
+count_element1( X, [_|T], Acc, R) :- count_element1(X, T, Acc, R), !.
 
-codifique([], []).
-codifique(L, [[X,N]|LL]) :-
-    separa(L, [X|LS], LR),
-    length([X|LS], N),
-    codifique(LR, LL).
+reverse_list([], []).
+reverse_list([H|T], R) :-
+    reverse_list(T, RT), 
+    append(RT, [H], R).
 
-circule(L, 0, L).
-circule(L, N, LO) :-
-   N > 0,
-   M is N-1,
-   append(R, [X], LO),
-   circule(L, M, [X|R]).
-circule(L, N, [X|LO]) :-
-   N < 0,
-   M is N+1,
-   append(LO, [X], R),
-   circule(L, M, R).
+%---------------------------------------------------------------------------------------------------------
+
+empacote([], []) :- !.
+empacote( L, Result) :- empacote1( L, [], R), reverse_list(R, Result), !.
+
+empacote1( [], R, R) :- !.
+empacote1( L, Acc, R) :- biggest_equal_predicate(L, Result, Rest), empacote1(Rest, [Result|Acc], R), !.
+
+biggest_equal_predicate( [X|T], Result, Rest) :- biggest_equal_predicate1( X, T, [X], Result,Rest), !.
+
+biggest_equal_predicate1( _,[], Result, Result, []) :- !.
+biggest_equal_predicate1(X, [X|T], Acc, Result, Rest) :- biggest_equal_predicate1( X, T, [X|Acc], Result, Rest), !.
+biggest_equal_predicate1(_, [Y|Rest], Result, Result, [Y|Rest]) :- !.
+
+reverse_list([], []).
+reverse_list([H|T], R) :-
+    reverse_list(T, RT), 
+    append(RT, [H], R).
+
+%---------------------------------------------------------------------------------------------------------
+
+circule( L, 0, L) :- !.
+circule( [H|T], N, Result) :- N > 0, N1 is N-1, append(T,[H],R), circule(R, N1, Result), !. 
+circule( [H|T], N, Result) :- N1 is N+1, get_last_element([H|T], LE, Rest), circule( [LE|Rest], N1, Result), !.
+
+
+get_last_element(L, LastElement, Rest) :- get_last_element1(L, [], LastElement, Rest1), reverse_list(Rest1, Rest),  !.
+
+get_last_element1( [X], Rest, X, Rest) :- !.
+get_last_element1( [X|T], Acc, LE, R) :-get_last_element1( T, [X|Acc], LE , R), !.
+
+
+reverse_list([], []).
+reverse_list([H|T], R) :-
+    reverse_list(T, RT), 
+    append(RT, [H], R).
+
+%---------------------------------------------------------------------------------------------------------
+profundidade([],1) :- !.
+profundidade([H|T],R):-atomic(H), profundidade(T,R), !.
+profundidade([H|T],R):- profundidade(H,R1), profundidade(T,R2), R3 is R1+1, max(R3,R2,R), !.
+
+max(N1, N2, N1) :-
+    N1 >= N2.
+max(N1, N2, N2) :-
+    N1 < N2.
+%---------------------------------------------------------------------------------------------------------
