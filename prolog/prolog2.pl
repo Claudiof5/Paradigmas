@@ -103,16 +103,36 @@ oculteConj( [H|T], L, R1) :- oculte(H, L, R2),  oculteConj(T, R2, R1), !.
 
 intercala( X, _, 1, [X]) :- !.
 intercala( X, Y, N, [X|R]) :- N1 is N-1, intercala(Y,X,N1,R), !.
+juntar([], L, L).
+juntar([X|L1], L2, [X|L3]) :- juntar(L2, L1, L3).
 
-sumarize( [],[],[]) :-!.
-%sumarize( [H|T], L1, L2) :- member(H, L1), findindex(H, L1, I), incindex(I, L2, L3), sumarize(T, L1, L3), !.
-sumarize( [H|T], [H|L1], [1|L2]) :- summarize(T, L1, L2), !.
+divide(L, 0, [], L).
+divide([X|L], N, [X|L1], L2) :-
+    M is N-1,
+    divide(L, M, L1, L2).
 
+separa([X], [X], []).
+separa([X|L], [X,X|L1], L2) :- separa(L, [X|L1], L2).
+separa([X|L], L1, [X|L2]) :- separa(L, L1, L2).
+empacote([], []).
+empacote(L, [LS|LL]) :-
+    separa(L, LS, LR),
+    empacote(LR, LL).
 
-findindex( X, L, R) :- findindex2( X, L, 0, R), !.
+codifique([], []).
+codifique(L, [[X,N]|LL]) :-
+    separa(L, [X|LS], LR),
+    length([X|LS], N),
+    codifique(LR, LL).
 
-findindex2(X,[X|_], R, R) :- !.
-findindex2(X,[_|T], I, R) :- I2 is I+1, findindex2(X,T,I2,R), !.
-
-incindex( 0, [H|T], [H2|T]) :- H2 is H + 1, !.
-incindex( N, [H|T], [H|R]) :- N2 is N - 1, incindex(N2, T, R), !.
+circule(L, 0, L).
+circule(L, N, LO) :-
+   N > 0,
+   M is N-1,
+   append(R, [X], LO),
+   circule(L, M, [X|R]).
+circule(L, N, [X|LO]) :-
+   N < 0,
+   M is N+1,
+   append(LO, [X], R),
+   circule(L, M, R).
