@@ -81,50 +81,36 @@ decodifica( [], []) :- !.
 decodifica( [[0,_]|T], R) :- decodifica( T, R), !.
 decodifica( [[N,C]|T], [C|R]) :- N1 is N-1, decodifica( [[N1, C]|T], R), !.
 %---------------------------------------------------------------------------------------------------------
-
-sumarize(L, L1, L2) :-
-    return_set(L, S), count_set( S, L, L2), reverse_list(S, L1), !.
-
-
+sumarize(L, L1, L2) :- return_set(L, L1), count_set( L1, L, L2), !.
 return_set( L, S) :- return_set1( L, [], S), !.
 
 return_set1([], S, S) :-!.
 return_set1([X|T], Acc, R) :- member(X, Acc), return_set1(T, Acc, R), !.
-return_set1([X|T], Acc, R) :- return_set1(T, [X|Acc], R), !.
+return_set1([X|T], Acc, R) :- append( Acc, [X], Acc2), return_set1(T, Acc2, R), !.
 
 
 count_set( S, L, R) :- count_set1( S, L, [], R), !.
 count_set1( [], _, R, R ) :- !.
-count_set1( [X|T], L , Acc, R) :- count_element(X, L, Xcount), count_set1(T, L, [Xcount|Acc], R), !.
+count_set1( [X|T], L , Acc, R) :- count_element(X, L, Xcount), append( Acc, [Xcount], Acc2),count_set1(T, L, Acc2, R), !.
 
 count_element( X, L, R) :- count_element1(X, L, 0, R), !.
 count_element1( _, [], R, R) :- !.
 count_element1( X, [X|T], Acc, R) :- Acc2 is Acc + 1, count_element1(X, T, Acc2, R), !.
 count_element1( X, [_|T], Acc, R) :- count_element1(X, T, Acc, R), !.
 
-reverse_list([], []).
-reverse_list([H|T], R) :-
-    reverse_list(T, RT), 
-    append(RT, [H], R).
-
 %---------------------------------------------------------------------------------------------------------
-
 empacote([], []) :- !.
-empacote( L, Result) :- empacote1( L, [], R), reverse_list(R, Result), !.
+empacote( L, Result) :- empacote1( L, [], Result), !.
 
 empacote1( [], R, R) :- !.
-empacote1( L, Acc, R) :- biggest_equal_predicate(L, Result, Rest), empacote1(Rest, [Result|Acc], R), !.
+empacote1( L, Acc, R) :- biggest_equal_predicate(L, Result, Rest), append(Acc, [Result], Acc2) ,empacote1(Rest,Acc2, R), !.
 
 biggest_equal_predicate( [X|T], Result, Rest) :- biggest_equal_predicate1( X, T, [X], Result,Rest), !.
 
 biggest_equal_predicate1( _,[], Result, Result, []) :- !.
-biggest_equal_predicate1(X, [X|T], Acc, Result, Rest) :- biggest_equal_predicate1( X, T, [X|Acc], Result, Rest), !.
+biggest_equal_predicate1(X, [X|T], Acc, Result, Rest) :- append([X],Acc, Acc2),biggest_equal_predicate1( X, T, Acc2, Result, Rest), !.
 biggest_equal_predicate1(_, [Y|Rest], Result, Result, [Y|Rest]) :- !.
 
-reverse_list([], []).
-reverse_list([H|T], R) :-
-    reverse_list(T, RT), 
-    append(RT, [H], R).
 
 %---------------------------------------------------------------------------------------------------------
 
@@ -133,16 +119,10 @@ circule( [H|T], N, Result) :- N > 0, N1 is N-1, append(T,[H],R), circule(R, N1, 
 circule( [H|T], N, Result) :- N1 is N+1, get_last_element([H|T], LE, Rest), circule( [LE|Rest], N1, Result), !.
 
 
-get_last_element(L, LastElement, Rest) :- get_last_element1(L, [], LastElement, Rest1), reverse_list(Rest1, Rest),  !.
+get_last_element(L, LastElement, Rest) :- get_last_element1(L, [], LastElement, Rest),  !.
 
 get_last_element1( [X], Rest, X, Rest) :- !.
-get_last_element1( [X|T], Acc, LE, R) :-get_last_element1( T, [X|Acc], LE , R), !.
-
-
-reverse_list([], []).
-reverse_list([H|T], R) :-
-    reverse_list(T, RT), 
-    append(RT, [H], R).
+get_last_element1( [X|T], Acc, LE, R) :-append(Acc, [X], Acc2), get_last_element1( T, Acc2, LE , R), !.
 
 %---------------------------------------------------------------------------------------------------------
 profundidade([],1) :- !.
