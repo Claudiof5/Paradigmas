@@ -1,0 +1,36 @@
+#lang racket
+(define (concatenar1 l1 l2)
+  (cond
+    [(null? l1) l2]
+    [(null? l2) l1]
+    [else (cons (first l1) (concatenar1 (rest l1) l2))]
+  )
+)
+
+(define (juntar l1 l2)
+  (cond
+    [(null? l1) l2]
+    [(null? l2) l1]
+    [else (cons (first l1) (juntar l2 (rest l1)))]
+  )
+)
+
+(define (concatenar2 ll)
+  (cond
+    [(null? ll) '()]
+    [(list? (first ll))
+     (concatenar1 (first ll) (concatenar2 (rest ll)))]
+    [else (cons (ll) (concatenar2 (rest ll)))]
+  )
+)
+
+(define (concatenar4 . l)
+  (apply concatenar2 l)
+  )
+
+(define (concatenar3 . l)
+  (cond
+    [(null? l) '()]
+    [else (concatenar1 (first l) (apply concatenar3 (rest l)))]
+  )
+)
